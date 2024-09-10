@@ -95,7 +95,7 @@ async def info(interaction: discord.Interaction):
         "/playerlist : Lists all the players in NA1\n"
         "/ping : Bot ping\n"
         "/source : Bot source code\n"
-        "/oreclac : Ore calculator spreadsheet"
+        "/orecalc : Ore calculator spreadsheet"
     )
     await interaction.response.send_message(f"Bot Info:\n{bot_description}")
 
@@ -104,7 +104,7 @@ async def link(interaction: discord.Interaction):
     github_link = "https://github.com/Mr-Baguetter/Space-Engineers-Discord-Bot" #Change to your repo if you create a fork
     await interaction.response.send_message(f"Check out the source code here: {github_link}")
 
-@bot.tree.command(name='oreclac', description='Get a link to the ore calculator spreadsheet.')
+@bot.tree.command(name='orecalc', description='Get a link to the ore calculator spreadsheet.')
 async def link(interaction: discord.Interaction):
     spreadsheet_link = "https://docs.google.com/spreadsheets/d/1gXqODCeVkEtX4inPnZikTXRwo3n0_wzogJGda3W9JJg/edit?usp=sharing" 
     await interaction.response.send_message(f"Please make a copy of the spreadsheet here: {spreadsheet_link}")
