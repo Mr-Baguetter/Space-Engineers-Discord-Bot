@@ -42,9 +42,13 @@ async def on_ready():
 
 
 def seconds_to_hours(seconds):
-    """Convert seconds to hours with a precision of 2 decimal places."""
-    hours = seconds / 3600
-    return f"{hours:.2f} hours"
+    """Convert seconds to hours or minutes based on playtime."""
+    if seconds < 3600:
+        minutes = seconds / 60
+        return f"{minutes:.0f} minutes"
+    else:
+        hours = seconds / 3600
+        return f"{hours:.2f} hours"
 
 
 @bot.tree.command(name='playerlist', description='Get the current players on NA1!')
