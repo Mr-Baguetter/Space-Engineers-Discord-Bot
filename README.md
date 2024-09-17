@@ -19,5 +19,4 @@ A discord bot thats by default pings a space engineers server (Keen NA1 by defau
 * cors
 * npm install cors
 # How to change what server information is retrieved from.
-* change the ip field in server.js to the ip of the server
-* change the port field in server.js to the servers port
+* do /serverset and input the ip and port
