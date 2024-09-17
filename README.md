@@ -6,6 +6,8 @@ A discord bot thats by default pings a space engineers server (Keen NA1 by defau
 * Pip install Discord.py
 * aiohttp
 * Pip install aiohttp
+* Redis
+* pip install redis
 # Server.js Dependencies
 * express
 * npm install express
