@@ -285,7 +285,7 @@ async def restartbot(interaction: discord.Interaction):
         await interaction.response.send_message('Restarting the bot...')
         print('Restart command issued.')
         await bot.close()
-        os.execv(sys.executable, ['python', 'BOT_PATH'])
+        os.execv(sys.executable, ['python', BOT_PATH])
     else:
         await interaction.response.send_message("You don't have permission to restart the bot.")
 
