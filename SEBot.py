@@ -19,7 +19,7 @@ REDIS_DB = int(os.getenv('REDIS_DB'))
 REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
 github_link = "https://github.com/Mr-Baguetter/Space-Engineers-Discord-Bot"  # Change to your repo if you create a fork, or create a new repo
 allowed_user_id = 617462103938302098 #Change this to your Discord id.
-BOT_PATH = 'C:\\Users\\admin\\Downloads\\Discordbot\\SEBot.py' #Change this to the bot path.
+BOT_PATH = 'C:\\Users\\admin\\Downloads\\Discordbot\\SEBot.py' #Change this to the directory where the bot is located. 'SEBot.py' doesn’t need to be changed unless it has been renamed.
 
 redis_client = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=REDIS_DB, decode_responses=True) #I would recommend setting up Redis since alot of the code requires it. Bot likely wont start without it.
 
