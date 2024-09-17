@@ -6,8 +6,10 @@ from discord import app_commands
 import os
 import sys
 import redis
+import subprocess
 from dotenv import load_dotenv
 from datetime import datetime, timezone, timedelta
+import re
 
 
 load_dotenv()
@@ -19,7 +21,9 @@ REDIS_DB = int(os.getenv('REDIS_DB'))
 REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
 github_link = "https://github.com/Mr-Baguetter/Space-Engineers-Discord-Bot"  # Change to your repo if you create a fork, or create a new repo
 allowed_user_id = 617462103938302098 #Change this to your Discord id.
-BOT_PATH = 'C:\\Users\\admin\\Downloads\\Discordbot\\SEBot.py' #Change this to the directory where the bot is located. 'SEBot.py' doesn’t need to be changed unless it has been renamed.
+BOT_PATH = 'C:\\Users\\admin\\Downloads\\Discordbot\\SEBot.py' #Change this to the directory the bot is in. "SEBot.py" dosent need to be changed unless renamed.
+EXPRESS_SERVER_PATH = "C:\\Users\\admin\\Downloads\\Discordbot\\server.js" #Change this to the directory the javascript file is in. "server.js" dosent need to be changed unless renamed.
+
 
 redis_client = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=REDIS_DB, decode_responses=True) #I would recommend setting up Redis since alot of the code requires it. Bot likely wont start without it.
 
@@ -59,6 +63,7 @@ async def on_ready():
     await bot.tree.sync()
     global start_time
     start_time = datetime.now(utc_minus_5)
+    bot.node_process = subprocess.Popen(['node', EXPRESS_SERVER_PATH], cwd=os.path.dirname(EXPRESS_SERVER_PATH))
     print(f'Logged in as {bot.user.name}')
     print('Commands have been synced.')
     check_server_status.start()
@@ -290,7 +295,7 @@ async def restartbot(interaction: discord.Interaction):
         await interaction.response.send_message("You don't have permission to restart the bot.")
 
 @bot.tree.command(name='suggestion', description='Submit a suggestion.')
-@app_commands.describe(suggestion="Your suggestion for the server or bot.")
+@app_commands.describe(suggestion="Your suggestion for the bot.")
 async def suggestion(interaction: discord.Interaction, suggestion: str):
     suggestions_key = "suggestions_list"
     redis_client.rpush(suggestions_key, suggestion)
@@ -375,8 +380,8 @@ async def shutdown(interaction: discord.Interaction):
     else:
         await interaction.response.send_message("You don't have permission to shutdown the bot.")
 
-BOT_VERSION = "1.6.3"
-LATEST_ADDITIONS = "1.6.0 Added player join/leave logging. \n 1.6.1 Added time joined/left to player join/leave logs. \n 1.6.2 Added player leave notification commands. \n 1.6.3 Code improvements. No noticable changes."
+BOT_VERSION = "1.6.6"
+LATEST_ADDITIONS = "1.6.0 Added player join/leave logging. \n 1.6.1 Added time joined/left to player join/leave logs. \n 1.6.2 Added player leave notification commands. \n 1.6.3 Code improvements. No noticable changes. \n 1.6.4 - 1.6.5 Bug chasing. \n 1.6.6 Added the /serverset command"
 
 @bot.tree.command(name='versioninfo', description='Get the current version information of the bot.')
 @app_commands.allowed_installs(guilds=True, users=True)
@@ -413,5 +418,37 @@ async def stopplayerleavenotification(interaction: discord.Interaction):
         await interaction.response.send_message("You have successfully unsubscribed from player leave notifications.", ephemeral=True)
     else:
         await interaction.response.send_message("You are not subscribed to player leave notifications.", ephemeral=True)
+
+@bot.tree.command(name="serverset", description="Set the server IP address and port")
+@app_commands.describe(ip="The IP address to set for the server", port="The port number to set for the server (1-65535)")
+async def serverset(interaction: discord.Interaction, ip: str, port: int):
+    if not re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", ip):
+        await interaction.response.send_message("Invalid IP format. Please use a valid IP address.", ephemeral=True)
+        return
+
+    if not (0 < port < 65536):
+        await interaction.response.send_message("Invalid port. Please provide a valid port number between 1 and 65535.", ephemeral=True)
+        return
+
+    try:
+        with open(EXPRESS_SERVER_PATH, 'r') as file:
+            content = file.read()
+
+        content = re.sub(r"host: '.*?'", f"host: '{ip}'", content)
+        content = re.sub(r"port: \d+", f"port: {port}", content)
+
+        with open(EXPRESS_SERVER_PATH, 'w') as file:
+            file.write(content)
+
+        if hasattr(bot, 'node_process') and bot.node_process:
+            bot.node_process.terminate()
+            bot.node_process.wait()
+
+        bot.node_process = subprocess.Popen(['node', EXPRESS_SERVER_PATH], cwd=os.path.dirname(EXPRESS_SERVER_PATH))
+
+        await interaction.response.send_message(f"Server IP and port successfully updated to: {ip}:{port}. Node.js server restarted.", ephemeral=True)
+
+    except Exception as e:
+        await interaction.response.send_message(f"Error updating server settings: {e}", ephemeral=True)
 
 bot.run(TOKEN)
