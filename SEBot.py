@@ -21,14 +21,14 @@ REDIS_DB = int(os.getenv('REDIS_DB'))
 REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
 github_link = "https://github.com/Mr-Baguetter/Space-Engineers-Discord-Bot"  # Change to your repo if you create a fork, or create a new repo
 allowed_user_id = 617462103938302098 #Change this to your Discord id.
-BOT_PATH = 'C:\\Users\\admin\\Downloads\\Discordbot\\SEBot.py' #Change this to the directory the bot is in. "SEBot.py" dosent need to be changed unless renamed.
+BOT_PATH = 'C:\\Users\\admin\\Downloads\\Discordbot\\Space-Engineers-Discord-Bot\\SEBot.py' #Change this to the directory the bot is in. "SEBot.py" dosent need to be changed unless renamed.
 EXPRESS_SERVER_PATH = "C:\\Users\\admin\\Downloads\\Discordbot\\server.js" #Change this to the directory the javascript file is in. "server.js" dosent need to be changed unless renamed.
 
 
 redis_client = redis.StrictRedis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=REDIS_DB, decode_responses=True) #I would recommend setting up Redis since alot of the code requires it. Bot likely wont start without it.
 
 SERVER_URL = 'http://localhost:3000/players'  # URL of the Express server. If self hosted should be http://localhost:3000/players
-CHECK_INTERVAL = 1
+CHECK_INTERVAL = 2
 log_channel_key = "log_channel_id"
 utc_minus_5 = timezone(timedelta(hours=-5)) #Change hours=x to your UTC time offset.
 
@@ -50,7 +50,7 @@ async def fetch_player_count():
                 return None
 
 
-@tasks.loop(seconds=CHECK_INTERVAL)
+@tasks.loop(seconds=1)
 async def update_status():
     player_count = await fetch_player_count()
     if player_count is not None:
@@ -112,6 +112,9 @@ async def check_server_status():
 
 
 async def notify_player_joined(player_name):
+    if not player_name:
+        print("Player name is missing. Ignoring this event.")
+        return
     log_channel_id = await get_log_channel_id()
     if log_channel_id:
         channel = bot.get_channel(int(log_channel_id))
@@ -123,9 +126,11 @@ async def notify_player_joined(player_name):
         print("Log channel has not been set.")
 
 async def notify_player_left(player_name, time_spent):
+    if not player_name:
+        print("Player name is missing. Ignoring this event.")
+        return
     log_channel_id = await get_log_channel_id()
-    notifications_key = "leave_notifications"
-
+    notifications_key = "leave_notifications"    
     if log_channel_id:
         channel = bot.get_channel(int(log_channel_id))
         if channel:
@@ -143,6 +148,7 @@ async def notify_player_left(player_name, time_spent):
             print("Log channel not found.")
     else:
         print("Log channel has not been set.")
+
 
 
 @bot.tree.command(name="setlogchannel", description="Set the log channel for server status updates")
